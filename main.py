@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
+import boto3
 from fastapi import FastAPI
 from mangum import Mangum
 
@@ -11,6 +12,7 @@ logger.setLevel(logging.INFO)
 app = FastAPI()
 
 mangum_handler = Mangum(app)
+cloudwatch = boto3.client("cloudwatch")
 
 
 @app.get("/")
@@ -37,20 +39,31 @@ def get_user():
 
 
 def lambda_handler(event, context):
-    try:
-        return mangum_handler(event, context)
+    response = mangum_handler(event, context)
 
-    except Exception as e:
+    if response.get("statusCode", 200) >= 500:
         error_payload = {
             "event": "LAMBDA_RUNTIME_ERROR",
             "service": "fastapi-user-service",
-            "error_type": type(e).__name__,
-            "message": str(e),
+            "error_type": "HTTP500",
+            "message": f"Handler returned HTTP {response['statusCode']}",
             "request_id": getattr(context, "aws_request_id", None),
             "severity": "CRITICAL",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-
         logger.error(json.dumps(error_payload))
 
-        raise Exception(json.dumps(error_payload))
+        cloudwatch.put_metric_data(
+            Namespace="FastAPIService",
+            MetricData=[{
+                "MetricName": "UserEndpointErrors",
+                "Dimensions": [
+                    {"Name": "Service", "Value": "fastapi-user-service"},
+                    {"Name": "Endpoint", "Value": "/user"},
+                ],
+                "Value": 1,
+                "Unit": "Count",
+            }],
+        )
+
+    return response
