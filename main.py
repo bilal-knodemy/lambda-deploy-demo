@@ -10,6 +10,10 @@ def home():
 @app.get("/user")
 def get_user():
     data = {"name": "Ali"}
-    return {"name": data["age"]}
+
+    if "age" not in data:
+        raise Exception("Unexpected server error: age missing")
+
+    return {"name": data["name"], "age": data["age"]}
 
 handler = Mangum(app)
