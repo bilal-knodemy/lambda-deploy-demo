@@ -10,10 +10,6 @@ def home():
 @app.get("/user")
 def get_user():
     data = {"name": "Ali"}
-
-    if "age" not in data:
-        raise HTTPException(status_code=404, detail="Age not found")
-
     return {"name": data["age"]}
 
 handler = Mangum(app)
