@@ -11,11 +11,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install zip tool
-        run: sudo apt-get update && sudo apt-get install -y zip
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-      - name: Create Zip file for Lambda function
-        run: zip -r code.zip .
+      - name: Install dependencies
+        run: |
+          mkdir package
+          pip install -r requirements.txt -t package
+
+      - name: Copy application code
+        run: |
+          cp main.py package/
+
+      - name: Create deployment package
+        run: |
+          cd package
+          zip -r ../code.zip .
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -27,5 +40,5 @@ jobs:
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-          --function-name lambda-deploy-demo \
-          --zip-file fileb://code.zip
+            --function-name lambda-deploy-demo \
+            --zip-file fileb://code.zip
