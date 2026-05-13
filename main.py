@@ -16,12 +16,12 @@ cloudwatch = boto3.client("cloudwatch")
 
 
 @app.get("/")
-def home():
+async def home():
     return {"message": "API is working fine 🚀"}
 
 
 @app.get("/user")
-def get_user():
+async def get_user():
     data = {"name": "Ali"}
 
     if "age" not in data:
