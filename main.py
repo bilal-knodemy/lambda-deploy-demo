@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
 
 import boto3
 from fastapi import FastAPI
@@ -13,6 +14,8 @@ app = FastAPI()
 
 mangum_handler = Mangum(app)
 cloudwatch = boto3.client("cloudwatch")
+
+executor = ThreadPoolExecutor(max_workers=5)
 
 
 @app.get("/")
@@ -53,7 +56,8 @@ def lambda_handler(event, context):
         }
         logger.error(json.dumps(error_payload))
 
-        cloudwatch.put_metric_data(
+        # Asynchronous CloudWatch metric submission
+        executor.submit(cloudwatch.put_metric_data,
             Namespace="FastAPIService",
             MetricData=[{
                 "MetricName": "UserEndpointErrors",
