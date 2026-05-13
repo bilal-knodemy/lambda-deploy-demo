@@ -22,7 +22,7 @@ def home():
 
 @app.get("/user")
 def get_user():
-    data = {"name": "Ali"}
+    data = {"name": "Ali", "age": None}  # Added default age key
 
     if "age" not in data:
         error_payload = {
