@@ -24,18 +24,7 @@ def home():
 def get_user():
     data = {"name": "Ali", "age": None}  # Added default age key
 
-    if "age" not in data:
-        error_payload = {
-            "event": "VALIDATION_ERROR",
-            "service": "fastapi-user-service",
-            "error_type": "KeyError",
-            "message": "Age not found in data",
-            "severity": "CRITICAL",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-
-        logger.error(json.dumps(error_payload))
-        raise Exception(json.dumps(error_payload))
+    # Removed unnecessary check for 'age' in data
 
 
 def lambda_handler(event, context):
