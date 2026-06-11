@@ -22,7 +22,7 @@ def home():
 
 @app.get("/user")
 def get_user():
-    data = {"name": "Ali", "age": None}  
+    data = {"name": "Ali"}  
 
     if "age" not in data:
         error_payload = {
